@@ -1,6 +1,27 @@
-﻿namespace Workgrid.Services
+﻿using Microsoft.AspNetCore.Identity;
+using Workgrid.Models;
+
+namespace Workgrid.Services
 {
-    public class PasswordServices
+    public class PasswordService
     {
+        private readonly PasswordHasher<User> _hasher = new();
+
+        public string HashPassword(User user, string password)
+        {
+        return _hasher.HashPassword(user, password);
+        }
+
+     public bool VerifyPassword(User user, string hashedPassword, string password)
+    {
+        var result = _hasher.VerifyHashedPassword(
+            user,
+            hashedPassword,
+            password
+        );
+
+        return result == PasswordVerificationResult.Success;
     }
+
+}
 }
