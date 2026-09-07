@@ -19,6 +19,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Project> Projects { get; set; }
     public DbSet<WorkTask> Tasks { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
+      
+    
 
 
 
