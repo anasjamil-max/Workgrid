@@ -8,6 +8,7 @@ namespace Workgrid.Controllers;
 [Route("api/[controller]")]
 public class TestController : ControllerBase
 {
+
     [HttpGet("protected")]
     [Authorize]
     public IActionResult Protected()
