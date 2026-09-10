@@ -59,14 +59,14 @@ public class TeamController : ControllerBase
 
 
     [HttpGet("{organizationId}")]
-    public async Task<IActionResult> GetTeams(long organizatioinId)
+    public async Task<IActionResult> GetTeams(long organizationId)
     {
         var userId = long.Parse(
             User.FindFirstValue(ClaimTypes.NameIdentifier)!
             );
 
-        var membership = await _context.OrganizationMembers.FirstOrDefaultAsync(
-            x.OrganizationId == organizatioinId &&
+        var membership = await _context.OrganizationMembers.FirstOrDefaultAsync( x =>
+            x.OrganizationId == organizationId &&
             x.UserId == userId &&
             x.IsActive);
 
@@ -76,14 +76,60 @@ public class TeamController : ControllerBase
         }
 
         var teams = await _context.Teams
-            .Where(x => x.OrganizationId == organizatioinId)
+            .Where(x => x.OrganizationId == organizationId)
             .ToListAsync();
-            return Ok(teams);
+            return Ok(teams); 
 
         
 
     
     }
+
+
+    [HttpPost("member")]
+    public async Task<IActionResult> AddMember(AddTeamMemberRequest request)
+    {
+        var userId = long.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+
+        var team = await _context.Teams
+            .FirstOrDefaultAsync(x => x.Id == request.TeamId);
+
+        if (team == null)
+        {
+            return NotFound("Team not found.");
+        }
+
+        var membership = await _context.OrganizationMembers
+            .FirstOrDefaultAsync(x =>
+                x.OrganizationId == team.OrganizationId &&
+                x.UserId == userId &&
+                x.IsActive);
+
+        if (membership == null)
+        {
+            return Forbid();
+        }
+
+        var teamMember = new TeamMember
+        {
+            TeamId = request.TeamId,
+            UserId = request.UserId,
+            Role = request.Role,
+            JoinedAt = DateTime.UtcNow
+        };
+
+        _context.TeamMembers.Add(teamMember);
+        await _context.SaveChangesAsync();
+
+        return Ok(teamMember);
+    }
+
+
+
+
+
 
 
 
