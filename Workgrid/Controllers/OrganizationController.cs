@@ -22,6 +22,7 @@ public class OrganizationController : ControllerBase
         _context = context;
 
     }
+   
 
     [HttpPost]
     public async Task<IActionResult> Create(CreateOrganizationRequest request)
@@ -92,12 +93,73 @@ public class OrganizationController : ControllerBase
            .ToListAsync();
         return Ok(organizations);
              
-             
-       
-    
     }
-    
+
+
+    [HttpPost("invite")]
+    public async Task<IActionResult> InviteUser(InviteUserRequest request)
+    {
+        var userId = long.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+
+        var membership = await _context.OrganizationMembers
+            .FirstOrDefaultAsync(x =>
+                x.OrganizationId == request.OrganizationId &&
+                x.UserId == userId &&
+                x.IsActive);
+
+        if (membership == null || membership.Role != "Owner")
+        {
+            return Forbid();
+        }
+
+        var invitedUser = await _context.Users
+            .FirstOrDefaultAsync(x => x.Email == request.Email);
+
+        if (invitedUser == null)
+        {
+            return NotFound("User not found.");
+        }
+
+        var existingMembership = await _context.OrganizationMembers
+            .FirstOrDefaultAsync(x =>
+                x.OrganizationId == request.OrganizationId &&
+                x.UserId == invitedUser.Id);
+
+        if (existingMembership != null)
+        {
+            return BadRequest("User is already a member.");
+        }
+
+        var invitation = new Invitation
+        {
+            OrganizationId = request.OrganizationId,
+            InvitedByUserId = userId,
+            Email = request.Email,
+            Role = request.Role,
+            Token = Guid.NewGuid().ToString(),
+            Status = "Pending",
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.Invitations.Add(invitation);
+        await _context.SaveChangesAsync();
+
+        return Ok(invitation);
+    }
+
+
+
+
+
 
 }
+
+
+    
+
+
 
 
