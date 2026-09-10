@@ -54,12 +54,42 @@ public class TeamController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(team);
+    }
 
 
 
+    [HttpGet("{organizationId}")]
+    public async Task<IActionResult> GetTeams(long organizatioinId)
+    {
+        var userId = long.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+            );
 
+        var membership = await _context.OrganizationMembers.FirstOrDefaultAsync(
+            x.OrganizationId == organizatioinId &&
+            x.UserId == userId &&
+            x.IsActive);
+
+        if (membership == null)
+        {
+            return Forbid();
+        }
+
+        var teams = await _context.Teams
+            .Where(x => x.OrganizationId == organizatioinId)
+            .ToListAsync();
+            return Ok(teams);
+
+        
+
+    
     }
 
 
 
 }
+
+
+
+
+
