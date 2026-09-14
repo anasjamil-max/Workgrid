@@ -1,3 +1,4 @@
+namespace Workgrid.DTOs.Project;
 public class CreateProjectRequest
 {
     public long OrganizationId { get; set; }
