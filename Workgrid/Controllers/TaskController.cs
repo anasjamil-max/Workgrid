@@ -1,3 +1,4 @@
+
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +37,39 @@ public class TaskController : ControllerBase
         if (membership == null)
         {
             return Forbid();
+        }
+
+        var project = await _context.Projects
+            .FirstOrDefaultAsync(x =>
+                x.Id == request.ProjectId &&
+                x.OrganizationId == request.OrganizationId);
+
+        if (project == null)
+        {
+            return NotFound("Project not found in this organization.");
+        }
+
+        if (request.AssignedToUserId.HasValue)
+        {
+            var userExists = await _context.Users
+                .AnyAsync(x => x.Id == request.AssignedToUserId.Value);
+
+            if (!userExists)
+            {
+                return NotFound("Assigned user not found.");
+            }
+
+            var assignedUser = await _context.OrganizationMembers
+                .FirstOrDefaultAsync(x =>
+                    x.OrganizationId == request.OrganizationId &&
+                    x.UserId == request.AssignedToUserId.Value &&
+                    x.IsActive);
+
+            if (assignedUser == null)
+            {
+                return BadRequest(
+                    "Assigned user is not a member of this organization.");
+            }
         }
 
         var task = new WorkTask
@@ -91,4 +125,21 @@ public class TaskController : ControllerBase
 
         return Ok(tasks);
     }
+
+    //update task
+    //to update existing task
+
+
+    [HttpPut("{taskId}")]
+    public async Task<IActionResult> Update(long task, UpdateTaskRequest request)
+    {
+
+
+
+
+
+    }
+
+
+
 }
