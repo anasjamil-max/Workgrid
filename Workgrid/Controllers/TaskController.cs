@@ -126,17 +126,75 @@ public class TaskController : ControllerBase
         return Ok(tasks);
     }
 
-    //update task
-    //to update existing task
+
+    
 
 
     [HttpPut("{taskId}")]
-    public async Task<IActionResult> Update(long task, UpdateTaskRequest request)
+    public async Task<IActionResult> Update(long taskId, UpdateTaskRequest request)
     {
 
+        var userId = long.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
 
 
+        var task = await _context.Tasks
+           .FirstOrDefaultAsync(x => x.Id == taskId);
 
+
+        if (task == null)
+        {
+            return NotFound("Task not found.");
+        }
+
+
+        var membership = await _context.OrganizationMembers
+            .FirstOrDefaultAsync(x =>
+                x.OrganizationId == task.OrganizationId &&
+                x.UserId == userId &&
+                x.IsActive);
+
+        if (membership == null)
+        {
+            return Forbid();
+        }
+
+        if (request.AssignedToUserId.HasValue)
+        {
+            var userExists = await _context.Users
+                .AnyAsync(x => x.Id == request.AssignedToUserId.Value);
+
+            if (!userExists)
+            {
+                return NotFound("Assigned user not found.");
+            }
+
+            var assignedUser = await _context.OrganizationMembers
+                .FirstOrDefaultAsync(x =>
+                    x.OrganizationId == task.OrganizationId &&
+                    x.UserId == request.AssignedToUserId.Value &&
+                    x.IsActive);
+
+            if (assignedUser == null)
+            {
+                return BadRequest(
+                    "Assigned user is not a member of this organization.");
+            }
+        }
+
+        task.AssignedToUserId = request.AssignedToUserId;
+        task.Title = request.Title;
+        task.Description = request.Description;
+        task.Status = request.Status;
+        task.Priority = request.Priority;
+        task.DueDate = request.DueDate;
+        task.UpdatedAt = DateTime.UtcNow;
+
+
+        await _context.SaveChangesAsync();
+
+        return Ok(task);
 
     }
 
