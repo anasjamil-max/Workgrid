@@ -198,6 +198,42 @@ public class TaskController : ControllerBase
 
     }
 
+    [HttpDelete("{taskId}")]
+    public async Task<IActionResult> Delete(long taskId)
+    {
+        var userId = long.Parse(
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!
+        );
+
+
+        var task = await _context.Tasks
+           .FirstOrDefaultAsync(x => x.Id == taskId);
+
+
+        if (task == null)
+        {
+            return NotFound("Task not found.");
+        }
+
+
+        var membership = await _context.OrganizationMembers
+            .FirstOrDefaultAsync(x =>
+                x.OrganizationId == task.OrganizationId &&
+                x.UserId == userId &&
+                x.IsActive);
+
+        if (membership == null)
+        {
+            return Forbid();
+        }
+
+        _context.Tasks.Remove(task);
+
+        await _context.SaveChangesAsync();
+        return Ok("Task deleted successfully.");
+
+    }
+
 
 
 }
