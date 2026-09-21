@@ -5,6 +5,8 @@ using Workgrid.Data;
 using System.Security.Claims;
 using Workgrid.DTOs.Project;
 using Workgrid.Models;
+using Workgrid.Services;
+
 
 namespace Workgrid.Controllers;
 
@@ -14,10 +16,12 @@ namespace Workgrid.Controllers;
 public class ProjectController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly AuthorizationService _authorizationService;
 
-    public ProjectController(ApplicationDbContext context)
+    public ProjectController(ApplicationDbContext context, AuthorizationService authorizationService)
     {
         _context = context;
+        _authorizationService = authorizationService;
     }
 
     [HttpPost]
@@ -27,17 +31,14 @@ public class ProjectController : ControllerBase
             User.FindFirstValue(ClaimTypes.NameIdentifier)!
         );
 
-        var membership = await _context.OrganizationMembers
-            .FirstOrDefaultAsync(x =>
-                x.OrganizationId == request.OrganizationId &&
-                x.UserId == userId &&
-                x.IsActive);
+        var canCreateProject = await _authorizationService.IsOwnerOrManager(
+    userId,
+    request.OrganizationId);
 
-        if (membership == null)
+        if (!canCreateProject)
         {
             return Forbid();
         }
-
         var project = new Project
         {
             OrganizationId = request.OrganizationId,
