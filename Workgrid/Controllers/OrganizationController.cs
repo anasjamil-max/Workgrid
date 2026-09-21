@@ -1,10 +1,11 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using Workgrid.Data;
 using Workgrid.DTOs.Organization;
 using Workgrid.Models;
-using Workgrid.Data;
-using Microsoft.EntityFrameworkCore;
+using Workgrid.Services;
 
 namespace Workgrid.Controllers;
 
@@ -15,11 +16,13 @@ namespace Workgrid.Controllers;
 public class OrganizationController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly AuthorizationService _authorizationService;
 
-    public OrganizationController(ApplicationDbContext context)
+    public OrganizationController(ApplicationDbContext context, AuthorizationService authorizationService)
     {
 
         _context = context;
+        _authorizationService = authorizationService;
 
     }
    
@@ -103,16 +106,15 @@ public class OrganizationController : ControllerBase
             User.FindFirstValue(ClaimTypes.NameIdentifier)!
         );
 
-        var membership = await _context.OrganizationMembers
-            .FirstOrDefaultAsync(x =>
-                x.OrganizationId == request.OrganizationId &&
-                x.UserId == userId &&
-                x.IsActive);
+        var canInvite = await _authorizationService.IsOwnerOrManager(
+    userId,
+    request.OrganizationId);
 
-        if (membership == null || membership.Role != "Owner")
+        if (!canInvite)
         {
             return Forbid();
         }
+
 
         var invitedUser = await _context.Users
             .FirstOrDefaultAsync(x => x.Email == request.Email);

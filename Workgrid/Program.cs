@@ -17,6 +17,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Services
 builder.Services.AddScoped<TenantContext>();
 builder.Services.AddScoped<PasswordService>();
+builder.Services.AddScoped<AuthorizationService>();
 
 builder.Services.AddControllers();
 
