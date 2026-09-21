@@ -103,17 +103,27 @@ public class TeamController : ControllerBase
             return NotFound("Team not found.");
         }
 
-        var membership = await _context.OrganizationMembers
-            .FirstOrDefaultAsync(x =>
-                x.OrganizationId == team.OrganizationId &&
-                x.UserId == userId &&
-                x.IsActive);
+        var canAddMember = await _authorizationService.IsOwnerOrManager(
+    userId,
+    team.OrganizationId);
 
-        if (membership == null)
+        if (!canAddMember)
         {
             return Forbid();
-        }
 
+
+
+        }
+        var targetUserIsMember = await _context.OrganizationMembers
+    .AnyAsync(x =>
+        x.OrganizationId == team.OrganizationId &&
+        x.UserId == request.UserId &&
+        x.IsActive);
+
+        if (!targetUserIsMember)
+        {
+            return BadRequest("User is not a member of this organization.");
+        }
         var teamMember = new TeamMember
         {
             TeamId = request.TeamId,
