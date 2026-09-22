@@ -1,16 +1,19 @@
 using Microsoft.EntityFrameworkCore;
 using Workgrid.Models;
+using Workgrid.Services;
 
 namespace Workgrid.Data;
 
 public class ApplicationDbContext : DbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, TenantContext tenantContext)
         : base(options)
     {
+        _tenantContext = tenantContext;
     }
 
     public DbSet<User> Users { get; set; }
+    private readonly TenantContext _tenantContext;
     public DbSet<Organization> Organizations { get; set; }
     public DbSet<OrganizationMember> OrganizationMembers { get; set; }
     public DbSet<Invitation> Invitations { get; set; }
@@ -27,6 +30,11 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Team>()
+    .HasQueryFilter(x =>
+        !_tenantContext.OrganizationId.HasValue ||
+        x.OrganizationId == _tenantContext.OrganizationId);
 
         modelBuilder.Entity<OrganizationMember>()
             .HasOne<Organization>()

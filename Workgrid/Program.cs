@@ -5,6 +5,7 @@ using Microsoft.OpenApi;
 
 using System.Text;
 using Workgrid.Data;
+using Workgrid.Middleware;
 using Workgrid.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -76,6 +77,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+app.UseMiddleware<TenantMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

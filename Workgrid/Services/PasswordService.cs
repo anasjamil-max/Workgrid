@@ -23,5 +23,5 @@ namespace Workgrid.Services
         return result == PasswordVerificationResult.Success;
     }
 
-}
+    }
 }
