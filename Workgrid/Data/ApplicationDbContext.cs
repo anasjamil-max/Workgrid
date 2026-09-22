@@ -36,6 +36,22 @@ public class ApplicationDbContext : DbContext
         !_tenantContext.OrganizationId.HasValue ||
         x.OrganizationId == _tenantContext.OrganizationId);
 
+
+        modelBuilder.Entity<Project>()
+    .HasQueryFilter(x =>
+        !_tenantContext.OrganizationId.HasValue ||
+        x.OrganizationId == _tenantContext.OrganizationId);
+
+        modelBuilder.Entity<WorkTask>()
+    .HasQueryFilter(x =>
+        !_tenantContext.OrganizationId.HasValue ||
+        x.OrganizationId == _tenantContext.OrganizationId);
+
+        modelBuilder.Entity<Invitation>()
+    .HasQueryFilter(x =>
+        !_tenantContext.OrganizationId.HasValue ||
+        x.OrganizationId == _tenantContext.OrganizationId);
+
         modelBuilder.Entity<OrganizationMember>()
             .HasOne<Organization>()
             .WithMany()
