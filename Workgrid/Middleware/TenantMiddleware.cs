@@ -36,5 +36,8 @@ public class TenantMiddleware
         }
 
         await _next(context);
+
+       
+
     }
 }

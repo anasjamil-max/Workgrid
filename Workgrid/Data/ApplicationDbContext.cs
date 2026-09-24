@@ -51,7 +51,7 @@ public class ApplicationDbContext : DbContext
     .HasQueryFilter(x =>
         !_tenantContext.OrganizationId.HasValue ||
         x.OrganizationId == _tenantContext.OrganizationId);
-
+   
         modelBuilder.Entity<OrganizationMember>()
             .HasOne<Organization>()
             .WithMany()
