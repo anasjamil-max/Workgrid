@@ -32,40 +32,40 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
-        var existingUser = await _context.Users
-            .FirstOrDefaultAsync(x => x.Email == request.Email);
-
-        if (existingUser != null)
-        {
-            return BadRequest("Email already registered.");
-        }
-
-        var user = new User
-        {
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            Email = request.Email,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
-        user.PasswordHash = _passwordService.HashPassword(
-            user,
-            request.Password
-        );
-
         try
         {
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(x => x.Email == request.Email);
+
+            if (existingUser != null)
+            {
+                return BadRequest("Email already registered.");
+            }
+
+            var user = new User
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            user.PasswordHash = _passwordService.HashPassword(
+                user,
+                request.Password
+            );
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+
+            return Ok("Registration successful.");
         }
         catch (Exception ex)
         {
-            return StatusCode(500, ex.Message);
+            return StatusCode(500, ex.ToString());
         }
-
-        return Ok("Registration successful.");
     }
 
     [HttpPost("login")]
