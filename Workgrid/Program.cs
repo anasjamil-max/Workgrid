@@ -12,8 +12,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-   options.UseNpgsql(
-    builder.Configuration["DATABASE_URL"]));
+    options.UseNpgsql(
+        $"Host={builder.Configuration["PGHOST"]};" +
+        $"Port={builder.Configuration["PGPORT"]};" +
+        $"Database={builder.Configuration["PGDATABASE"]};" +
+        $"Username={builder.Configuration["PGUSER"]};" +
+        $"Password={builder.Configuration["PGPASSWORD"]}"
+    ));
 
 // Services
 builder.Services.AddScoped<TenantContext>();
