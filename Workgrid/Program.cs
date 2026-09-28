@@ -12,8 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DATABASE_URL")));
+   options.UseNpgsql(
+    builder.Configuration["DATABASE_URL"]));
 
 // Services
 builder.Services.AddScoped<TenantContext>();
