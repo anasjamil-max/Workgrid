@@ -55,8 +55,15 @@ public class AuthController : ControllerBase
             request.Password
         );
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        try
+        {
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
 
         return Ok("Registration successful.");
     }
