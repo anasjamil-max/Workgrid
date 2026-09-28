@@ -29,6 +29,23 @@ public class AuthController : ControllerBase
         _configuration = configuration;
     }
 
+    //
+    [HttpGet("db-test")]
+    public async Task<IActionResult> DbTest()
+    {
+        try
+        {
+            await _context.Database.OpenConnectionAsync();
+            await _context.Database.CloseConnectionAsync();
+
+            return Ok("Database connection works.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.ToString());
+        }
+    }
+
     [HttpPost("register")]
 public async Task<IActionResult> Register(RegisterRequest request)
 {
