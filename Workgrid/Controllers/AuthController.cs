@@ -30,43 +30,44 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterRequest request)
-    {
+public async Task<IActionResult> Register(RegisterRequest request)
+{
+        return StatusCode(500, "REGISTER METHOD REACHED");
         try
+    {
+        var existingUser = await _context.Users
+            .FirstOrDefaultAsync(x => x.Email == request.Email);
+
+        if (existingUser != null)
         {
-            var existingUser = await _context.Users
-                .FirstOrDefaultAsync(x => x.Email == request.Email);
-
-            if (existingUser != null)
-            {
-                return BadRequest("Email already registered.");
-            }
-
-            var user = new User
-            {
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                Email = request.Email,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            user.PasswordHash = _passwordService.HashPassword(
-                user,
-                request.Password
-            );
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return Ok("Registration successful.");
+            return BadRequest("Email already registered.");
         }
-        catch (Exception ex)
+
+        var user = new User
         {
-            return StatusCode(500, ex.ToString());
-        }
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Email = request.Email,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        user.PasswordHash = _passwordService.HashPassword(
+            user,
+            request.Password
+        );
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        return Ok("Registration successful.");
     }
+    catch (Exception ex)
+    {
+        return StatusCode(500, ex.ToString());
+    }
+}
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
