@@ -68,11 +68,10 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // Swagger
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
 
 app.UseHttpsRedirection();
 
