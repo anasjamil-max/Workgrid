@@ -11,15 +11,25 @@ using Workgrid.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Database
+var databaseUrl = builder.Configuration["DATABASE_URL"];
+
+var databaseUri = new Uri(databaseUrl!);
+
+var userInfo = databaseUri.UserInfo.Split(':');
+
+var username = Uri.UnescapeDataString(userInfo[0]);
+var password = Uri.UnescapeDataString(userInfo[1]);
+
+var connectionString =
+    $"Host={databaseUri.Host};" +
+    $"Port={databaseUri.Port};" +
+    $"Database={databaseUri.AbsolutePath.TrimStart('/')};" +
+    $"Username={username};" +
+    $"Password={password};" +
+    $"SSL Mode=Require;Trust Server Certificate=true;";
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(
-        $"Host={builder.Configuration["PGHOST"]};" +
-        $"Port={builder.Configuration["PGPORT"]};" +
-        $"Database={builder.Configuration["PGDATABASE"]};" +
-        $"Username={builder.Configuration["PGUSER"]};" +
-        $"Password={builder.Configuration["PGPASSWORD"]}" +
-         $"SSL Mode=Require;Trust Server Certificate=true;"
-    ));
+    options.UseNpgsql(connectionString));
 
 // Services
 builder.Services.AddScoped<TenantContext>();
