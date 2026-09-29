@@ -17,7 +17,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         $"Port={builder.Configuration["PGPORT"]};" +
         $"Database={builder.Configuration["PGDATABASE"]};" +
         $"Username={builder.Configuration["PGUSER"]};" +
-        $"Password={builder.Configuration["PGPASSWORD"]}"
+        $"Password={builder.Configuration["PGPASSWORD"]}" +
+         $"SSL Mode=Require;Trust Server Certificate=true;"
     ));
 
 // Services
