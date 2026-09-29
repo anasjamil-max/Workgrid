@@ -134,4 +134,5 @@ public async Task<IActionResult> Register(RegisterRequest request)
             token = tokenString
         });
     }
+    //done
 }
