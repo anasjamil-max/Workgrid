@@ -49,7 +49,7 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
 public async Task<IActionResult> Register(RegisterRequest request)
 {
-        return StatusCode(500, "REGISTER METHOD REACHED");
+        
         try
     {
         var existingUser = await _context.Users
